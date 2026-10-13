@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>رسالة مريومتي اليومية 💌</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Cairo & Alex Brush for English calligraphy -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Great+Vibes&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #060608;
+      color: #ffffff;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+    }
+
+    .font-calligraphy {
+      font-family: 'Great Vibes', cursive;
+    }
+
+    /* Ambient dynamic canvas */
+    #bgCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Outer glow pulse for interactive elements */
+    @keyframes pulseGlow {
+      0%, 100% {
+        box-shadow: 0 0 25px rgba(244, 63, 94, 0.4), 0 0 50px rgba(244, 63, 94, 0.2);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(244, 63, 94, 0.7), 0 0 80px rgba(244, 63, 94, 0.4);
+      }
+    }
+
+    .glow-pulse {
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+
+    /* Envelope CSS & 3D Flap Animations */
+    .envelope-wrapper {
+      position: relative;
+      cursor: pointer;
+      perspective: 1000px;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .envelope-wrapper:hover {
+      transform: scale(1.04) translateY(-5px);
+    }
+
+    .envelope-box {
+      position: relative;
+      width: 320px;
+      height: 220px;
+      background: #fcfcfc;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.1);
+      overflow: visible;
+    }
+
+    @media (max-width: 480px) {
+      .envelope-box {
+        width: 270px;
+        height: 185px;
+      }
+    }
+
+    /* Envelope flaps styling */
+    .envelope-pocket {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      border-radius: 16px;
+      clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+      z-index: 3;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+
+    .envelope-top-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%);
+      clip-path: polygon(0 0, 100% 0, 50% 55%);
+      transform-origin: top center;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.6s;
+      z-index: 4;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+    }
+
+    .envelope-wrapper.open .envelope-top-flap {
+      transform: rotateX(180deg);
+      z-index: 1;
+    }
+
+    /* Inside Peek Letter */
+    .envelope-letter-peek {
+      position: absolute;
+      bottom: 15px;
+      left: 5%;
+      width: 90%;
+      height: 75%;
+      background: #fffdfa;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      z-index: 2;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .envelope-wrapper.open .envelope-letter-peek {
+      transform: translateY(-90px);
+    }
+
+    /* Center Red Heart Seal */
+    .heart-seal {
+      position: absolute;
+      top: 52%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 82px;
+      height: 75px;
+      background: linear-gradient(135deg, #ff1e56 0%, #e11d48 100%);
+      clip-path: path('M 40,15 C 40,15 30,0 16,0 C 7,0 0,8 0,19 C 0,35 25,52 40,65 C 55,52 80,35 80,19 C 80,8 73,0 64,0 C 50,0 40,15 40,15 Z');
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(225, 29, 72, 0.5);
+      transition: transform 0.4s ease, opacity 0.4s ease;
+      cursor: pointer;
+    }
+
+    .heart-seal span {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      font-family: 'Great Vibes', cursive;
+      letter-spacing: 0.5px;
+    }
+
+    .envelope-wrapper.open .heart-seal {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0.5);
+    }
+
+    /* Glassmorphism Letter Modal */
+    .letter-modal {
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: scale(0.9) translateY(20px);
+    }
+
+    .letter-modal.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+    }
+
+    /* Custom Scrollbar for letter content */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(244, 63, 94, 0.4);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(244, 63, 94, 0.7);
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen relative overflow-hidden bg-radial">
+
+  <!-- Floating background animation canvas -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Top Header Navigation & Day Counter -->
+  <header class="w-full max-w-4xl px-6 pt-6 z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3 bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 shadow-lg">
+      <span class="inline-block w-3 h-3 rounded-full bg-rose-500 animate-ping"></span>
+      <span id="currentDateDisplay" class="text-xs sm:text-sm text-gray-300 font-medium">جاري التحميل...</span>
+    </div>
+
+    <!-- Interactive Day Switcher / Indicator -->
+    <div class="flex items-center gap-2 bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/10">
+      <button id="prevDayBtn" title="اليوم السابق" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-rose-600/50 text-white transition-all disabled:opacity-30 disabled:pointer-events-none">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+
+      <div class="px-3 text-center">
+        <span id="dayBadge" class="text-sm font-bold text-rose-400">اليوم 1</span>
+        <span class="text-xs text-gray-400 block">من 30</span>
+      </div>
+
+      <button id="nextDayBtn" title="اليوم التالي" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-rose-600/50 text-white transition-all disabled:opacity-30 disabled:pointer-events-none">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Envelope Interactive Container -->
+  <main class="z-10 flex-1 flex flex-col items-center justify-center p-4 w-full max-w-md">
+    
+    <div class="text-center mb-8">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-300 via-pink-400 to-purple-300 mb-2">
+        رسائل إلى مريومتي 💖
+      </h1>
+      <p class="text-xs sm:text-sm text-gray-400 font-light">
+        اضغطي على الظرف لمشاهدة رسالة اليوم
+      </p>
+    </div>
+
+    <!-- Envelope Object -->
+    <div id="envelope" class="envelope-wrapper my-4" onclick="openLetter()">
+      <div class="envelope-box glow-pulse">
+        <!-- Top Flap -->
+        <div class="envelope-top-flap"></div>
+        
+        <!-- Inside Peek Card -->
+        <div class="envelope-letter-peek">
+          <span id="peekTag" class="text-xs font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full mb-1">دحيحتي</span>
+          <p id="peekText" class="text-[11px] text-gray-600 line-clamp-2 leading-relaxed">صباح الخير على أحلى وأشطر دحيحتي في الدنيا...</p>
+          <span class="text-[10px] text-rose-400 mt-1 font-semibold">اضغط للقراءة الكاملة ✨</span>
+        </div>
+
+        <!-- Pocket Bottom Flap -->
+        <div class="envelope-pocket"></div>
+
+        <!-- Red Center Heart with Calligraphy -->
+        <div class="heart-seal">
+          <span>Mariomty</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Action Button -->
+    <button onclick="openLetter()" class="mt-8 px-6 py-2.5 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-sm font-semibold shadow-lg shadow-rose-900/30 flex items-center gap-2 transform active:scale-95 transition-all">
+      <i class="fa-solid fa-envelope-open-text"></i>
+      <span>افتحي الرسالة</span>
+    </button>
+
+  </main>
+
+  <!-- Full Screen Letter Modal Window -->
+  <div id="letterModal" class="letter-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="relative w-full max-w-lg bg-gradient-to-b from-gray-900 via-gray-900/95 to-slate-900 rounded-3xl border border-rose-500/30 p-6 sm:p-8 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      
+      <!-- Top Decorative Bar -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-pink-500 to-purple-500"></div>
+
+      <!-- Close Modal Button -->
+      <button onclick="closeLetter()" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600 text-gray-300 hover:text-white flex items-center justify-center transition-all z-20">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <!-- Modal Content Header -->
+      <div class="flex items-center gap-3 mb-4 pb-3 border-b border-white/10">
+        <div class="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-xl shadow-inner">
+          💌
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="modalTag" class="text-xs font-bold text-rose-400 bg-rose-950/60 border border-rose-800/50 px-2.5 py-0.5 rounded-full">
+              (دحيحتي)
+            </span>
+            <span id="modalDay" class="text-xs text-gray-400">اليوم 1</span>
+          </div>
+          <h2 id="modalDate" class="text-xs text-gray-500 mt-0.5">14 أكتوبر 2026</h2>
+        </div>
+      </div>
+
+      <!-- Scrollable Message Body -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar pl-1 pr-2 py-2">
+        <div id="modalContent" class="text-sm sm:text-base text-gray-200 leading-relaxed font-normal whitespace-pre-line space-y-3">
+          <!-- Text dynamically injected -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+        <span class="text-xs text-rose-300/80 font-calligraphy text-lg">Mariomty</span>
+        <button onclick="closeLetter()" class="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all">
+          إغلاق الرسالة
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom Footer Info -->
+  <footer class="z-10 pb-4 text-center">
+    <p class="text-[11px] text-gray-500 font-light">
+      صُنع بحب من أجل مريومتي ✨ 2026
+    </p>
+  </footer>
+
+  <script>
+    /* Array containing all 30 romantic daily messages */
+    const dailyMessages = [
+      {
+        tag: "دحيحتي",
+        text: "صباح الخير على أحلى وأشطر دحيحتي في الدنيا كلها.\nمش عارف إزاي بتبدئي يومك بس أتمنى يكون بصوتك الحلو ده اللي ينور لي صباحي.\nالنهارده بقولك إنتِ مش بس دحيحة الشغل أو المذاكرة، إنتِ دحيحة في سرقة قلبي وعقلي من أول نظرة.\nربنا ما يحرمني من جمال ضحكتك ولا من روقانك اللي بيطمني عليكي طول اليوم.\nيومك سعيد زيك يا أجمل حاجة حصلت لي في حياتي."
+      },
+      {
+        tag: "مريومتي",
+        text: "صباح النور والسرور على أغلى مريومتي في الكون.\nقمت النهارده وكل همي أقولك إن الشمس مش بتطلع عشان تنور الشارع، دي بتطلع عشان تشوف ضحكتك.\nيا بختي بيكي وبوجودك اللطيف في حياتي اللي بيخلي كل دقيقة تعدي بحلاوة زايدة.\nعايز أقولك إنك دايماً على بالي أول ما بفتح عيني الصبح وقبل ما أنام بالليل.\nيسعد لي صباحك وكل أوقاتك يا قمري."
+      },
+      {
+        tag: "حبيبتي",
+        text: "صباح الورد والفل على أحلى حبيبتي عرفتها في حياتي.\nكل يوم بيعدي باكتشف إن حبك بيزيد جوه قلبي أكتر وأكتر من الأول بكتير.\nإنتِ السعادة اللي كنت مستنيها تيجي وتغير شكل أيامي للأحسن وتمليها بهجة.\nبحب فيكي كل حاجة، طريقتك وكلامك وحتى جنانك اللطيف معايا.\nصباحك حب وعشق يا أجمل حبيبتي في الدنيا دي كلها."
+      },
+      {
+        tag: "حبي",
+        text: "صباح الروقان والجمال على أحلى حبي في الدنيا دي.\nعارفة إني بموت في تفاصيلك الصغيرة اللي بتخليني أحب اليوم عشاني هكلمك فيه؟\nإنتِ مش مجرد شخص في حياتي، إنتِ الحياة نفسها بكل ما فيها من فرح وضحك.\nيا رب دايمًا ضحكتك دي منورة وشك ومطلعة أحلى طاقة إيجابية في العالم.\nصباح الهنا والسكر على عيونك الحلوين."
+      },
+      {
+        tag: "قلبي",
+        text: "صباح الحب يا أجمل وأطيب قلبي.\nالنهارده صحيت على صوت عصفورة فكرتني بيكي وبسألك إزاي قمر زيك بيبدأ يومه من غير ما يعرف إنه واخد عقلي؟\nإنتِ دقات قلبي اللي بتخليني أحس إني عايش بجد ومبسوط.\nربنا يديمك ليا نعمة وسند وفرحة مش بتخلص أبداً مهما حصل.\nصباحك عسل وسكر زيك يا روحي."
+      },
+      {
+        tag: "حياتي",
+        text: "يا صباح الفل والهنا على أحلى حياتي اللي منورة أيامي.\nمن غيرك كانت الحياة بقت رمادية وملهاش أي طعم ولا لون جميل.\nبحب فيكي كل صفاتك، وحلاوة كلامك، وطيبة قلبك اللي مبتخلصش أبداً.\nعايز اليوم ده يعدي بسرعة عشان أسمع صوتك الجميل وتطمني عليكي.\nصباحك كله تفاؤل وخير يا أجمل ما رأت عيني."
+      },
+      {
+        tag: "روحي",
+        text: "صباح الجمال والرقة على أجمل روحي في الوجود.\nتعرفي إن روحك الحلوة دي هي اللي بتخليني أتحمل أي تعب أو ضغط في طريقي؟\nبحس إنك حتة مني، أو روحي التانية اللي بتمشي على الأرض قدامي.\nربنا ما يحرمني أبدًا من وجودك الدافي وجنبك اللطيف ده اللي بيهون عليا الصعب.\nصباحك دافي وسعيد يا أعز وأغلى الناس."
+      },
+      {
+        tag: "أميرتي",
+        text: "صباح الملك والجمال على أحلى أميرتي المتألقة كل يوم.\nإنتِ مش بس أميرة، إنتِ الملكة اللي عرشتي على قلبي من أول يوم عرفتك فيه.\nتاج جمالك وأخلاقك بيخلي كل اللي حواليكي يتمنوا رضاكي، وأنا محظوظ إنك ليا.\nيلا قومي افطري وافتكري إن في واحد مستني يطمن عليكِ بفارغ الصبر.\nصباح الهنا والسعادة يا أجمل أميرة."
+      },
+      {
+        tag: "دحيحتي",
+        text: "صباح النشاط والدلع كله على دحيحتي العسل.\nمش عارف بتجيبي طاقة التركيز والجمال دي كلها منين يا بنتي ما شاء الله!\nدايمًا مبهراني بذكائك وطريقتك المميزة في تفكيرك وفي كل حاجة بتعمليها.\nعاوز أقولك إنك حتى وأنتِ مركزة وعندك شغل أو مذاكرة بتفضلي قمر في عيني.\nيومك موفق ولطيف زيك يا دحيحتي الجميلة."
+      },
+      {
+        tag: "مريومتي",
+        text: "يا صباح الضحكة الحلوة على مريومتي السكرة.\nالنهارده هقولك سر صغير: أنا بموت في كل تفصيلة فيكي من طريقتك لحد نظرة عيونك.\nإنتِ إنسانة نادرة ومش بتتكرر مرتين أبداً في الزمن ده.\nأتمنى يومك يكون خفيف ولطيف ومفيش أي حاجة تعكر صفو مزاجك الجميل.\nصباحك فل وياسمين يا أجمل مريومة."
+      },
+      {
+        tag: "حبيبتي",
+        text: "صباح الورد الجوري على أحلى حبيبتي في الكون.\nكل صباح جديد بيبدأ هو فرصة جديدة عشان أعبر لك عن قد إيه إنتِ غالية عندي.\nلو بايدي، كنت خليت كل أيامك فرح وسعادة ومفيش فيها نقطة زعل واحدة.\nبحب عيونك وبحب كلامك اللي بينور لي عقلي وقلبي طول اليوم.\nصباح الحب والعشق يا أغلى ما أملك."
+      },
+      {
+        tag: "حبي",
+        text: "صباح السكر والشاي المضبوط على أحلى حبي ليا.\nالنهارده الجو حلو، بس الأجمل منه هو إنك في حياتي وبتشارکيني تفاصيلي.\nمهما كنت مشغول، بتبقي أول فكرة بتيجي في بالي أول ما اصبح وأقوم من النوم.\nربنا يخليكي ليا وما يحرمنيش من ضحكتك اللي بتفرحني بجد.\nصباحك زي السكر وزيك يا حبي."
+      },
+      {
+        tag: "قلبي",
+        text: "يا صباح الفل والياسمين على قلبي اللي بينبض بحبك.\nإنتِ مش بس غالية عندي، إنتِ النبضة الحلوة اللي جوه صدري ومخلياني عايش.\nكل ما أفتكرك بحس إن الدنيا لسه فيها خير وجمال وناس طيبة زيك.\nيلا اضحكي كده وافردي وشك عشان اليوم يبدأ حلو زيك.\nصباحك هنا وراحة بال يا قلبي."
+      },
+      {
+        tag: "حياتي",
+        text: "صباح الورد والسرور على أحلى حياتي اللي منورة أيامي.\nتعرفي إن بقيت بشوف كل حاجة حلوة بعيونك إنتِ؟\nالحياة معاكي ليها طعم تاني خالص مليان ضحك وحب ودلع ملوش آخر.\nربنا يديمك ليا السند والضحكة والحياة اللي بتمنيتها دايماً.\nصباحك جميل زيك يا أجمل حياة."
+      },
+      {
+        tag: "روحي",
+        text: "صباح النور والسرور على أجمل روحي.\nلما ببعتلك الصبح، بكون كأني ببعت قلبي وروحي عشان يبوسوا جبينك ويقولوا لك صباح الخير.\nإنتِ روحي اللي لو راحت مني أحس إني تايه في الدنيا دي كلها.\nدايمًا حاطط في بالي إنك أحلى وأطهر إنسانة قابلتها في عمري.\nصباحك سعادة وهنا يا روحي."
+      },
+      {
+        tag: "أميرتي",
+        text: "صباح الجمال والدلع كله يا أميرتي الغالية.\nالنهارده بقولك بملء الفم: مفيش زيك اتنين في الرقة والجمال والأخلاق دي كلها.\nمستعد أعمل أي حاجة في الدنيا بس عشان أشوف الابتسامة الحلوة دي على وشك.\nيا بخته اللي يعرف يقرب منك ويصبح على الوش القمر ده كل يوم.\nصباح الفل يا أميرة قلبي."
+      },
+      {
+        tag: "دحيحتي",
+        text: "صباح النشاط والحيوية على دحيحتي الشطورة.\nشايفك من الصبح بتفكري ومهتمة بكل تفصيلة، وده بيخليني أعجب بكي أكتر وأكتر.\nبس بالله عليكِ خدي بالك من نفسك وما تجهديش نفسك زيادة عن اللزوم.\nأنا بكون فخور بيكي وبكل خطوة بتعمليها وبكل نجاح بتوصليه.\nصباحك ورد وسعادة يا دحيحتي المميزة."
+      },
+      {
+        tag: "مريومتي",
+        text: "يا صباح الضحكة اللي بتنور لي عتمة أيامي يا مريومتي.\nعارفة؟ صوتك الصبح ده بيبقى أحلى مزيكا أسمعها في بداية يومي.\nربنا ما يحرمني أبدًا من رقتك ومن كلامك العذب اللي بيحلي أيامي الصعبة.\nقومي بقى واشربي قهوتك وخلي اليوم يعدي بكل خير وسلام.\nصباحك جميل يا أجمل مريومة."
+      },
+      {
+        tag: "حبيبتي",
+        text: "صباح الورد والفل يا أحلى حبيبتي في الدنيا دي كلها.\nإنتِ الإنسانة الوحيدة اللي كلماتها بتأثر فيا وبتغير مودي في ثواني معدودة.\nبحبك قد كل حاجة حلوة في العالم ده، وقد إصرارك وجمالك وطيبتك.\nأتمنى اليوم ده يديكي من السعادة قد ما إنتِ بتديني وأكتر بكتير.\nصباحك حب وعشق ما ينتهي."
+      },
+      {
+        tag: "حبي",
+        text: "صباح الجمال والروقان على أحلى حبي في عيوني.\nكل يوم بيمر بتأكد أكتر إن اختيار قلبي ليكِ كان أعظم وأجمل حاجة عملتها في حياتي.\nبحب طريقتك في الكلام وبحب جنانك ودلعك اللي ماليين عليا دنيتي.\nعايز أقولك إنك دايماً في البال وفي القلب مهما كانت زحمة الشغل.\nصباحك سكر وزيك يا حبي."
+      },
+      {
+        tag: "قلبي",
+        text: "صباح الحب والتدليل على أحلى قلبي.\nالنهارده بقولك إنتِ قمر الـ 14 اللي بينور طريقي كل ما أظلمت بيا الدنيا.\nقلبي ده مش ملكي، قلبي ده بقى بتاعك إنتِ وبس من غير منافس.\nحافظي عليه بقى عشان هو في أمان مع أغلى إنسانة في الوجود.\nصباحك هنا وابتسامة متميزة زيك يا قلبي."
+      },
+      {
+        tag: "حياتي",
+        text: "صباح الهنا والسرور على أجمل حياتي.\nالدنيا من غيرك كانت ناقصة حاجات كتير، وجيتي أنتِ كملتي كل النقص ده بوجودك.\nبقيت بحب اصبح عليكي عشان أعرف إن لسه في حاجات حلوة تستاهل نعيش عشانها.\nربنا يخليكي ليا وما يحرمنيش من طلتك الحلوة دي كل يوم.\nصباح الفل يا كل حياتي."
+      },
+      {
+        tag: "روحي",
+        text: "صباح الورد والياسمين على أغلى روحي في الوجود.\nلما بتوحشيني الصبح، بحس إن اليوم طويل أوي لغاية ما أطمن عليكي وأسمع صوتك.\nإنتِ مش مجرد صديقة وحبيبة، إنتِ الروح اللي بتدفعني أكمل وأنجح وأكون أحسن.\nبحب فيكي كل حاجة، حتى عصبيتك اللطيفة اللي بتعجبني وتجنني.\nصباحك راحة بال وسعادة يا روحي."
+      },
+      {
+        tag: "أميرتي",
+        text: "صباح العز والجمال على أميرتي وقمر الزمان.\nطول عمري مؤمن إن الأميرات موجودين بس في الحكايات، لغاية ما ظهرتي إنتِ ولقيتك حقيقة قدامي.\nبتمنى أسعدك وأخلي كل أيامك أعياد ومفاجآت تفرح قلبك الأبيض ده.\nقومي نوري الدنيا بضحكتك اللي مبتفارقش تفكيري طول الوقت.\nصباحك سعادة يا أجمل أميرة."
+      },
+      {
+        tag: "دحيحتي",
+        text: "صباح الذكاء والجمال على دحيحتي الخطيرة.\nيا بخت الكتب والمذاكرة بيكي، ويا بختي أنا بوجودك في حياتي اللي منورة كل زاوية.\nبحب فيكي طموحك وإصرارك وإزاي بتهتمي بكل التفاصيل بعقلانية وسحر.\nمهما كنتي مشغولة، افتكري دايماً إن في واحد بيحبك ومستني ضحكتك.\nصباحك نجاح وتوفيق يا دحيحتي الشطورة."
+      },
+      {
+        tag: "مريومتي",
+        text: "يا صباح الفل والياسمين على مريومتي القمر.\nإنتِ عاملة زي النسمة الهادية اللي بتطري على الواحد جو اليوم الحار.\nضحكتك وكلامك الحلو هما الدواء لكل هموم ومشاكل الشغل.\nيلا افرحي وابتسمي وخلي الصباح ده يشهد على أحلى وأجمل طاقة إيجابية.\nصباحك ورد يا أحلى مريومة."
+      },
+      {
+        tag: "حبيبتي",
+        text: "صباح الحب والغرام على أحلى حبيبتي.\nكل صباح معاكي بيكون بداية جديدة لقصة حب مفيهاش نهاية ولا ملل.\nإنتِ أجمل صدفة حصلت لي وأهم نعمة ربنا رزقني بيها في عمري كله.\nبحب عيونك وبحب كلامك وبموت في كل تفصيلة صغيرة في شخصيتك.\nصباحك كله فرحة وهنا يا حبيبتي."
+      },
+      {
+        tag: "حبي",
+        text: "صباح الروقان والجمال على أحلى حبي.\nالنهارده يوم جديد، وعندي أمل كبير إنه هيكون أحلى عشان هشوفك فيه أو هكلمك.\nإنتِ البهجة اللي بتدخل قلبي من غير استئذان وتغير مودي للأحسن فوراً.\nربنا ما يقطع لينا عادة ولا يحرمني من حبك ودلعك ده أبداً.\nصباحك سكر وزيك يا حب العمر."
+      },
+      {
+        tag: "قلبي",
+        text: "صباح الورد والسرور على قلبي اللي بينبض بحنانك.\nلو بايدي، كنت لمست كل ورقة شجر في طريقك وخليتها تقولك قد إنتِ غالية.\nإنتِ الأمان اللي بدور عليه في وسط زحمة وخنقة الدنيا دي كلها.\nدايمًا خليكِ واثقة إنك أقرب إنسانة لقلبي وروحي وعقلي.\nصباحك هنا وسرور يا قلبي."
+      },
+      {
+        tag: "حياتي وأميرتي",
+        text: "صباح الملك والجمال على أحلى حياتي وأميرتي.\nوصلنا لرقم 30 في رسايلي لكي، بس حبي ليكِ ملهوش لا بداية ولا نهاية.\nإنتِ الختام المسك لكل يومي وبدايته اللي بتنور لي عتمتي.\nبحبك بكل ما فيها الكلمة من معنى، وهفضل دايماً أدلعك وأقولك أحلى كلام في الدنيا.\nصباحك ورد وعسل يا أجمل مريم في الكون كله."
+      }
+    ];
+
+    // Start date set to October 14, 2026 at 00:00:00 midnight
+    const START_DATE = new Date(2026, 9, 14, 0, 0, 0); // Month 9 is October
+    let activeDayIndex = 0; // 0 to 29
+
+    function calculateTodayIndex() {
+      const now = new Date();
+      
+      // Calculate difference in days from Oct 14, 2026
+      const diffTime = now.getTime() - START_DATE.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        return 0; // Before start date defaults to Day 1
+      } else if (diffDays >= 30) {
+        return 29; // Cap at Day 30 or cycle
+      } else {
+        return diffDays;
+      }
+    }
+
+    // Update UI based on selected day index
+    function updateDayView(index) {
+      activeDayIndex = index;
+      const msg = dailyMessages[activeDayIndex];
+
+      // Calculate target date for the selected day
+      const targetDate = new Date(START_DATE);
+      targetDate.setDate(START_DATE.getDate() + activeDayIndex);
+
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      const dateFormatted = targetDate.toLocaleDateString('ar-EG', options);
+
+      // Peek Card Update
+      document.getElementById('peekTag').innerText = msg.tag;
+      document.getElementById('peekText').innerText = msg.text.replace(/\n/g, ' ');
+
+      // Header Badges Update
+      document.getElementById('dayBadge').innerText = `اليوم ${activeDayIndex + 1}`;
+      document.getElementById('currentDateDisplay').innerText = dateFormatted;
+
+      // Modal Update
+      document.getElementById('modalTag').innerText = `(${msg.tag})`;
+      document.getElementById('modalDay').innerText = `اليوم ${activeDayIndex + 1} من 30`;
+      document.getElementById('modalDate').innerText = dateFormatted;
+      document.getElementById('modalContent').innerText = msg.text;
+
+      // Pagination buttons states
+      document.getElementById('prevDayBtn').disabled = (activeDayIndex === 0);
+      document.getElementById('nextDayBtn').disabled = (activeDayIndex === 29);
+    }
+
+    // Envelope Interactions
+    function openLetter() {
+      const envelope = document.getElementById('envelope');
+      const modal = document.getElementById('letterModal');
+      
+      envelope.classList.add('open');
+
+      setTimeout(() => {
+        modal.classList.add('active');
+      }, 400);
+    }
+
+    function closeLetter() {
+      const envelope = document.getElementById('envelope');
+      const modal = document.getElementById('letterModal');
+      
+      modal.classList.remove('active');
+
+      setTimeout(() => {
+        envelope.classList.remove('open');
+      }, 200);
+    }
+
+    /* Dynamic Floating Arabic Words & Hearts Canvas Animation */
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const arabicWords = [
+      'مريومتي', 'قلبي', 'حبيبتي', 'دحيحتي', 
+      'ملاكي', 'عيوني', 'حياتي', 'روحي', 'أميرتي'
+    ];
+
+    const colors = [
+      '#ff769c', '#ff4d6d', '#f43f5e', 
+      '#e879f9', '#c084fc', '#38bdf8', 
+      '#34d399', '#fbbf24'
+    ];
+
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.reset(true);
+      }
+
+      reset(initial = false) {
+        this.x = Math.random() * canvas.width;
+        this.y = initial ? Math.random() * canvas.height : canvas.height + 40;
+        this.type = Math.random() > 0.4 ? 'word' : 'heart';
+        
+        if (this.type === 'word') {
+          this.text = arabicWords[Math.floor(Math.random() * arabicWords.length)];
+          this.fontSize = Math.floor(Math.random() * 12) + 18; // 18px - 30px
+        } else {
+          this.size = Math.random() * 14 + 10;
+        }
+
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.speedY = -(Math.random() * 0.7 + 0.3);
+        this.speedX = Math.sin(Math.random() * Math.PI) * 0.4;
+        this.opacity = Math.random() * 0.6 + 0.2;
+        this.pulseSpeed = Math.random() * 0.02 + 0.005;
+        this.angle = Math.random() * Math.PI * 2;
+      }
+
+      update() {
+        this.y += this.speedY;
+        this.x += Math.sin(this.angle) * 0.5;
+        this.angle += 0.01;
+
+        // Soft opacity glow oscillation
+        this.opacity += Math.sin(this.angle * 2) * 0.003;
+
+        if (this.y < -50 || this.x < -50 || this.x > canvas.width + 50) {
+          this.reset(false);
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.1, Math.min(0.8, this.opacity));
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 12;
+
+        if (this.type === 'word') {
+          ctx.font = `600 ${this.fontSize}px 'Cairo', sans-serif`;
+          ctx.fillStyle = this.color;
+          ctx.textAlign = 'center';
+          ctx.fillText(this.text, this.x, this.y);
+        } else {
+          // Draw floating glowing heart
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          const topCurveHeight = this.size * 0.3;
+          ctx.moveTo(this.x, this.y + topCurveHeight);
+          ctx.bezierCurveTo(
+            this.x, this.y, 
+            this.x - this.size / 2, this.y, 
+            this.x - this.size / 2, this.y + topCurveHeight
+          );
+          ctx.bezierCurveTo(
+            this.x - this.size / 2, this.y + (this.size + topCurveHeight) / 2, 
+            this.x, this.y + this.size, 
+            this.x, this.y + this.size
+          );
+          ctx.bezierCurveTo(
+            this.x, this.y + this.size, 
+            this.x + this.size / 2, this.y + (this.size + topCurveHeight) / 2, 
+            this.x + this.size / 2, this.y + topCurveHeight
+          );
+          ctx.bezierCurveTo(
+            this.x + this.size / 2, this.y, 
+            this.x, this.y, 
+            this.x, this.y + topCurveHeight
+          );
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    // Initialize Particle Pool
+    function initParticles() {
+      particles = [];
+      const count = Math.min(Math.floor(window.innerWidth / 25), 45); // Responsive particle count
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+
+    // Initialization on Page Load
+    window.onload = function() {
+      initParticles();
+      animateParticles();
+
+      // Calculate initial day index based on system time
+      const initialDay = calculateTodayIndex();
+      updateDayView(initialDay);
+
+      // Event listeners for prev/next day navigation
+      document.getElementById('prevDayBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (activeDayIndex > 0) {
+          updateDayView(activeDayIndex - 1);
+        }
+      });
+
+      document.getElementById('nextDayBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (activeDayIndex < 29) {
+          updateDayView(activeDayIndex + 1);
+        }
+      });
+    };
+  </script>
+</body>
+</html>
